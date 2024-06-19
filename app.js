@@ -9,13 +9,19 @@ dotenv.config();
 const app = express();
 const logger = morgan("dev");
 
+
+// MIDDLEWARE:
+app.use(
+    cors({
+        origin: ["http://localhost:5173"]
+    })
+);
 app.use(express.json());
 app.use(logger);
-
-//NEED TO CONFIGURE CORS HERE??
-
 //ADD APP.USE ROUTES HERE
 
+
+// START THE SERVER:
 app.listen(process.env.PORT, () => {
   console.clear();
   console.log("Server is up and running on port: ", process.env.PORT);
