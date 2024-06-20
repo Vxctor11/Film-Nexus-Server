@@ -119,4 +119,13 @@ router.get("/verify", isAuth, async (req, res) => {
   }
 });
 
+router.get("/admin", isAuth, isAdmin, async (req, res) => {
+  try {
+    res.json({ message: "Admin is logged in and verified.", user: req.user });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error);
+  }
+});
+
 export default router;
