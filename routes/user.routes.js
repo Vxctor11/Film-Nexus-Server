@@ -1,5 +1,6 @@
 import express from "express";
 import User from "../models/user.model.js";
+import Movie from "../models/movie.model.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import isAuth from "../middleware/authentication.middleware.js";
@@ -124,6 +125,114 @@ router.get("/admin", isAuth, isAdmin, async (req, res) => {
     res.json({ message: "Admin is logged in and verified.", user: req.user });
   } catch (error) {
     console.log(error);
+    res.status(500).json(error);
+  }
+});
+
+////////////////// ROUTES TO ADD/REMOVE FROM WATCHLIST AND FAVORITES //////////////
+//MIGHT REMOVE MESSAGE ON LINE 148-150 AND 201-203 SINCE OPTION WOULDNT BE ON FRONT END ANYWAY
+
+//ADD TO WATCHLIST
+router.post("/watchlist/:movieId", isAuth, async (req, res) => {
+  try {
+    const { movieId } = req.params;
+    const userId = req.user._id;
+    const movie = await Movie.findById(movieId);
+
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (user.watchlist.includes(movieId)) {
+      return res.status(400).json({ message: "Movie already in watchlist" });
+    }
+
+    await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { watchlist: movieId } },
+      { new: true }
+    ).populate("watchlist");
+
+    res.json({
+      message: "Movie added to watchlist",
+      watchlist: user.watchlist,
+    });
+  } catch (error) {
+    console.log("Error adding movie to watchlist", error);
+    res.status(500).json(error);
+  }
+});
+
+//REMOVE FROM WATCHLIST
+router.delete("/watchlist/:movieId", isAuth, async (req, res) => {
+  try {
+    const { movieId } = req.params;
+    const userId = req.user._id;
+
+    await User.findByIdAndUpdate(
+      userId,
+      { $pull: { watchlist: movieId } },
+      { new: true }
+    );
+
+    res.json({ message: "Movie removed from watchlist" });
+  } catch (error) {
+    console.log("Error removing movie from watchlist", error);
+    res.status(500).json(error);
+  }
+});
+
+//ADD MOVIE TO FAVORITES
+router.post("/favorites/:movieId", isAuth, async (req, res) => {
+  try {
+    const { movieId } = req.params;
+    const userId = req.user._id;
+
+    const movie = await Movie.findById(movieId);
+
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    const user = await User.findById(userId);
+
+    if (user.favorites.includes(movieId)) {
+      return res.status(400).json({ message: "Movie already in favorites" });
+    }
+
+    await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { favorites: movieId } },
+      { new: true }
+    ).populate("favorites");
+
+    res.json({
+      message: "Movie added to favorites",
+      favorites: user.favorites,
+    });
+  } catch (error) {
+    console.log("Error adding movie to Favorites", error);
+    res.status(500).json(error);
+  }
+});
+
+//REMOVE MOVIE FROM FAVORITES:
+router.delete("/favorites/:movieId", isAuth, async (req, res) => {
+  try {
+    const { movieId } = req.params;
+    const userId = req.user._id;
+
+    await User.findByIdAndUpdate(
+      userId,
+      { $pull: { favorites: movieId } },
+      { new: true }
+    );
+
+    res.json({ message: "Movie removed from favorites." });
+  } catch (error) {
+    console.log("Error removing movie from favorites", error);
     res.status(500).json(error);
   }
 });

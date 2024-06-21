@@ -15,7 +15,7 @@ const reviewSchema = new Schema(
       required: true,
       enum: [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5],
     },
-    media: { type: Schema.Types.ObjectId, ref: "Movie", required: true },
+    movie: { type: Schema.Types.ObjectId, ref: "Movie", required: true },
     creator: { type: Schema.Types.ObjectId, ref: "User" },
   },
   {

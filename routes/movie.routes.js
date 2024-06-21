@@ -2,6 +2,8 @@ import express from "express";
 import isAuth from "../middleware/authentication.middleware.js";
 import isAdmin from "../middleware/admin.middleware.js";
 import Movie from "../models/movie.model.js";
+import Review from "../models/review.model.js";
+import User from "../models/user.model.js";
 
 const router = express.Router();
 
@@ -52,7 +54,7 @@ router.post("/", isAuth, isAdmin, async (req, res) => {
 //CHECKED AND WORKING
 router.get("/all", async (req, res) => {
   try {
-    const allMovies = await Movie.find();
+    const allMovies = await Movie.find().populate("reviews");
     res.json(allMovies);
   } catch (error) {
     console.log("Error retrieving all movies", error);
@@ -65,7 +67,7 @@ router.get("/all", async (req, res) => {
 router.get("/:movieId", async (req, res) => {
   try {
     const { movieId } = req.params;
-    const movie = await Movie.findById(movieId);
+    const movie = await Movie.findById(movieId).populate("reviews");
     res.json(movie);
   } catch (error) {
     console.log("Error retrieving movie details", error);
@@ -123,11 +125,35 @@ router.put("/:movieId", isAuth, isAdmin, async (req, res) => {
 });
 
 //DELETE
-//CHEKED AND WORKING
+// need to have the deleted movie ref pulled from the users watch and fave list array
 router.delete("/:movieId", isAuth, isAdmin, async (req, res) => {
   try {
     const { movieId } = req.params;
+    const movie = await Movie.findById(movieId).populate("reviews");
+
+    //Removing reviews on this movie from any users reviews array and deleting the reviews after
+    for (const review of movie.reviews) {
+      await User.findByIdAndUpdate(review.creator, {
+        $pull: { reviews: review._id },
+      });
+      await Review.findByIdAndDelete(review._id);
+    }
+
+    //Removing the movie from users' watchlist
+    await User.updateMany(
+      { watchlist: movieId },
+      { $pull: { watchlist: movieId } }
+    );
+
+    //Removing the movie from users' favorites
+    await User.updateMany(
+      { favorites: movieId },
+      { $pull: { favorites: movieId } }
+    );
+
+    //Deleting the movie
     const deleted = await Movie.findByIdAndDelete(movieId);
+    console.log(deleted);
     res.json({
       message: deleted.title + " movie was deleted successfully",
       deleted,
