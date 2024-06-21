@@ -103,7 +103,7 @@ router.post("/login", async (req, res) => {
         expiresIn: "24h",
       }
     );
-    res.json({ user, jwtToken });
+    res.json({ user, authToken: jwtToken });
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
@@ -113,7 +113,8 @@ router.post("/login", async (req, res) => {
 //VERIFY with isAuth middleware
 router.get("/verify", isAuth, async (req, res) => {
   try {
-    res.json({ message: "User is logged in.", user: req.user });
+    const user = User.findById(req.user._id);
+    res.json({ message: "User is logged in.", user });
   } catch (error) {
     console.log(error);
     res.status(500).json(error);
