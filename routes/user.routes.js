@@ -113,7 +113,7 @@ router.post("/login", async (req, res) => {
 //VERIFY with isAuth middleware
 router.get("/verify", isAuth, async (req, res) => {
   try {
-    const user = User.findById(req.user._id);
+    const user = await User.findById(req.user._id);
     res.json({ message: "User is logged in.", user });
   } catch (error) {
     console.log(error);
