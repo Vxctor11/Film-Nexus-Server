@@ -205,6 +205,26 @@ router.delete("/watchlist/:movieId", isAuth, async (req, res) => {
   }
 });
 
+//GET FAVORITES
+router.get("/favorites", isAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).populate("favorites");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      message: "Favorites retrieved successfully",
+      favorites: user.favorites,
+    });
+  } catch (error) {
+    console.log("Error retrieving favorites", error);
+    res.status(500).json(error);
+  }
+});
+
 //ADD MOVIE TO FAVORITES
 router.post("/favorites/:movieId", isAuth, async (req, res) => {
   try {
