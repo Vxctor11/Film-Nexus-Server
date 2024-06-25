@@ -54,7 +54,10 @@ router.post("/", isAuth, isAdmin, async (req, res) => {
 //CHECKED AND WORKING
 router.get("/all", async (req, res) => {
   try {
-    const allMovies = await Movie.find().populate("reviews");
+    const allMovies = await Movie.find().populate({
+      path: "reviews",
+      populate: { path: "creator" },
+    });
     res.json(allMovies);
   } catch (error) {
     console.log("Error retrieving all movies", error);
@@ -67,7 +70,10 @@ router.get("/all", async (req, res) => {
 router.get("/:movieId", async (req, res) => {
   try {
     const { movieId } = req.params;
-    const movie = await Movie.findById(movieId).populate("reviews");
+    const movie = await Movie.findById(movieId).populate({
+      path: "reviews",
+      populate: { path: "creator" },
+    });
     res.json(movie);
   } catch (error) {
     console.log("Error retrieving movie details", error);
