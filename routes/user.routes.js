@@ -133,6 +133,26 @@ router.get("/admin", isAuth, isAdmin, async (req, res) => {
 ////////////////// ROUTES TO ADD/REMOVE FROM WATCHLIST AND FAVORITES //////////////
 //MIGHT REMOVE MESSAGE ON LINE 148-150 AND 201-203 SINCE OPTION WOULDNT BE ON FRONT END ANYWAY
 
+//GET WATCHLIST
+router.get("/watchlist", isAuth, async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const user = await User.findById(userId).populate("watchlist");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      message: "Watchlist retrieved successfully",
+      watchlist: user.watchlist,
+    });
+  } catch (error) {
+    console.log("Error retrieving watchlist", error);
+    res.status(500).json(error);
+  }
+});
+
 //ADD TO WATCHLIST
 router.post("/watchlist/:movieId", isAuth, async (req, res) => {
   try {
