@@ -7,6 +7,19 @@ import User from "../models/user.model.js";
 
 const router = express.Router();
 
+//SEARCH
+router.get("/search", async (req, res) => {
+  const { query } = req.query;
+  try {
+    const movies = await Movie.find({
+      title: { $regex: query, $options: "i" },
+    });
+    res.status(200).json(movies);
+  } catch (error) {
+    res.status(500).json({ message: "Error searching movies" });
+  }
+});
+
 //POST - ADD NEW MOVIE - SHOULD BE PROTECTED BY ISAUTH AND ISADMIN
 //CHECKED AND WORKING
 router.post("/", isAuth, isAdmin, async (req, res) => {
