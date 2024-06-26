@@ -48,7 +48,7 @@ router.delete("/:reviewId", isAuth, async (req, res) => {
     const { reviewId } = req.params;
     const review = await Review.findById(reviewId);
 
-    if (review.creator.toString() !== req.user._id) {
+    if (!req.user.isAdmin && review.creator.toString() !== req.user._id) {
       return res
         .status(401)
         .json({ message: "You cannot delete another user's review" });
@@ -67,6 +67,31 @@ router.delete("/:reviewId", isAuth, async (req, res) => {
     res.json({ message: "Your review has been deleted successfully" });
   } catch (error) {
     console.log("Error while deleting review", error);
+    res.status(500).json(error);
+  }
+});
+
+//EDIT REVIEW
+router.put("/:reviewId", isAuth, async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const { title, review, rating } = req.body;
+    const reviewData = { title, review, rating };
+
+    for (const property in reviewData) {
+      if (!reviewData[property]) {
+        delete reviewData.property;
+      }
+    }
+
+    const updated = await Review.findByIdAndUpdate(reviewId, reviewData, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.json({ message: "Review was updated successfully", updated });
+  } catch (error) {
+    console.log("Error editing the review", error);
     res.status(500).json(error);
   }
 });
