@@ -14,9 +14,7 @@ const logger = morgan("dev");
 
 // MIDDLEWARE:
 app.use(
-  cors({
-    origin: [process.env.REACT_URL],
-  })
+  cors()
 );
 app.use(express.json());
 app.use(logger);
